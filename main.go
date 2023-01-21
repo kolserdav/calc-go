@@ -36,17 +36,20 @@ var romans = map[string]int{
 	"X":    10,
 }
 
-var INPUT = "Input:\n"
+var MIN_ARGS_LENGTH = 3
+var MAX = 10
+var MIN = 1
+var INPUT = "Input:"
 var OUTPUT = "Output:\n"
 var WARNING = "[WARNING]"
 var ERROR = "[ERROR]"
 var RESULT = "Result is"
+var EXIT_WITH_ERROR = "Programm exit with error"
 
 var isLatin = false
 var isArabic = false
 
 func main() {
-	var operand string
 
 	var f *os.File
 	f = os.Stdin
@@ -54,62 +57,102 @@ func main() {
 	scanner := bufio.NewScanner(f)
 	fmt.Println(INPUT)
 	for scanner.Scan() {
-
 		str := scanner.Text()
 		args := strings.Split(str, " ")
 
-		val1, err := parseIntArgument(args[0])
-		operand, err = parseOperandArgument(args[1])
-		val2, err := parseIntArgument(args[2])
-		if err {
-			fmt.Println(OUTPUT, ERROR, "Programm exit with error")
+		length := len(args)
+		if length < MIN_ARGS_LENGTH {
+			fmt.Printf("%s %s Expected number of arguments '%d', received '%d'\n", OUTPUT, ERROR, MIN_ARGS_LENGTH, length)
 			os.Exit(1)
 		}
 
-		if isLatin && isArabic {
-			fmt.Println(OUTPUT, ERROR, "Latins and arabic numbers not supported together")
+		arg1, arg2, errN := parseNumbers(args)
+		operand, errO := parseOperandArgument(args[1])
+		if errN || errO {
+			fmt.Println(OUTPUT, ERROR, EXIT_WITH_ERROR)
 			os.Exit(1)
 		}
 
-		var val int
-		switch operand {
-		case "Plus":
-			val = plus(val1, val2)
-			break
-		case "Minus":
-			val = minus(val1, val2)
-			break
-		case "Multiple":
-			val = multiple(val1, val2)
-			break
-		case "Divide":
-			val = divide(val1, val2)
-			break
-		}
+		val := operate(arg1, arg2, operand)
+		showResult(val)
+		creanGlobal()
 
-		if isLatin {
-			fmt.Println(OUTPUT, RESULT, arabToLatin(val))
-		} else {
-			fmt.Println(OUTPUT, RESULT, val)
-		}
-		os.Exit(0)
+		fmt.Println(INPUT)
 	}
 }
 
-func plus(val1 int, val2 int) int {
-	return val1 + val2
+func creanGlobal() {
+	isLatin = false
+	isArabic = false
 }
 
-func minus(val1 int, val2 int) int {
-	return val1 - val2
+func showResult(val int) {
+	if isLatin {
+		if val < MIN {
+			fmt.Printf("%s The result cannot be converted to latin: is '%d' that is lower than '%d'\n", OUTPUT, val, MIN)
+			return
+		}
+		fmt.Println(OUTPUT, RESULT, arabToLatin(val))
+	} else {
+		fmt.Println(OUTPUT, RESULT, val)
+	}
 }
 
-func multiple(val1 int, val2 int) int {
-	return val1 * val2
+func parseNumbers(args []string) (int, int, bool) {
+	arg1, err1 := parseIntArgument(args[0])
+	arg2, err2 := parseIntArgument(args[2])
+	if err1 || err2 {
+		return 0, 0, true
+	}
+
+	if isLatin && isArabic {
+		fmt.Println(WARNING, "Latins and arabic numbers not supported together")
+		return 0, 0, true
+	}
+	return arg1, arg2, false
 }
 
-func divide(val1 int, val2 int) int {
-	return val1 / val2
+func plus(arg1 int, arg2 int) int {
+	return arg1 + arg2
+}
+
+func minus(arg1 int, arg2 int) int {
+	return arg1 - arg2
+}
+
+func multiple(arg1 int, arg2 int) int {
+	return arg1 * arg2
+}
+
+func divide(arg1 int, arg2 int) int {
+	return arg1 % arg2
+}
+
+func operate(arg1 int, arg2 int, operand string) int {
+	var val int
+	switch operand {
+	case "Plus":
+		val = plus(arg1, arg2)
+		break
+	case "Minus":
+		val = minus(arg1, arg2)
+		break
+	case "Multiple":
+		val = multiple(arg1, arg2)
+		break
+	case "Divide":
+		val = divide(arg1, arg2)
+		break
+	}
+	return val
+}
+
+func checkRange(num int) bool {
+	if num < MIN || num > MAX {
+		fmt.Printf("%s Invalid number '%d' expected: [1 - 10 or I - X]\n", WARNING, num)
+		return false
+	}
+	return true
 }
 
 func parseIntArgument(arg string) (int, bool) {
@@ -122,10 +165,16 @@ func parseIntArgument(arg string) (int, bool) {
 			isLatin = true
 		} else {
 			error := fmt.Errorf("%w", err)
-			fmt.Println(WARNING, "Argument is not a integer", error)
+			fmt.Println(WARNING, "Argument is not a integer number", error)
+			return 0, true
+		}
+		if !checkRange(firstInt) {
 			return 0, true
 		}
 		return firstInt, false
+	}
+	if !checkRange(firstInt) {
+		return 0, true
 	}
 	return firstInt, false
 }
