@@ -120,7 +120,7 @@ func minus(arg1 int, arg2 int) int {
 	return arg1 - arg2
 }
 
-func multiple(arg1 int, arg2 int) int {
+func multiply(arg1 int, arg2 int) int {
 	return arg1 * arg2
 }
 
@@ -137,8 +137,8 @@ func operate(arg1 int, arg2 int, operand string) int {
 	case "Minus":
 		val = minus(arg1, arg2)
 		break
-	case "Multiple":
-		val = multiple(arg1, arg2)
+	case "Multiply":
+		val = multiply(arg1, arg2)
 		break
 	case "Divide":
 		val = divide(arg1, arg2)
@@ -192,6 +192,7 @@ func parseOperandArgument(arg string) (string, bool) {
 		fmt.Println(WARNING, "Operand is missing", name)
 		return name, true
 	}
+	fmt.Println(name)
 	return name, false
 }
 
