@@ -192,7 +192,6 @@ func parseOperandArgument(arg string) (string, bool) {
 		fmt.Println(WARNING, "Operand is missing", name)
 		return name, true
 	}
-	fmt.Println(name)
 	return name, false
 }
 
