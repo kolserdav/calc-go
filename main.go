@@ -61,7 +61,7 @@ func main() {
 		args := strings.Split(str, " ")
 
 		length := len(args)
-		if length < MIN_ARGS_LENGTH {
+		if length != MIN_ARGS_LENGTH {
 			fmt.Printf("%s %s Expected number of arguments '%d', received '%d'\n", OUTPUT, ERROR, MIN_ARGS_LENGTH, length)
 			os.Exit(1)
 		}
@@ -88,8 +88,8 @@ func creanGlobal() {
 
 func showResult(val int) {
 	if isLatin {
-		if val < MIN {
-			fmt.Printf("%s The result cannot be converted to latin: is '%d' that is lower than '%d'\n", OUTPUT, val, MIN)
+		if val < MIN || val > MAX {
+			fmt.Printf("%s The result cannot be converted to latin: is '%d' that is lower than '%d', or more than '%d'\n", OUTPUT, val, MIN, MAX)
 			return
 		}
 		fmt.Println(OUTPUT, RESULT, arabToLatin(val))
